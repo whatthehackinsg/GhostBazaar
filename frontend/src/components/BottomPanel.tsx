@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import type { MousePosition } from "../hooks/useMousePosition"
 import { useIsMobile } from "../hooks/useIsMobile"
+import { HAS_API_BACKEND } from "../api"
 import { MoonPayMark } from "./MoonPayMark"
 
 interface Props {
@@ -12,7 +13,6 @@ const BOTTOM_LINKS = [
   { label: "Documentation", href: "https://github.com/whatthehackinsg/ghost-bazaar/blob/main/ENGINEERING.md" },
   { label: "GitHub", href: "https://github.com/whatthehackinsg/ghost-bazaar" },
   { label: "Protocol Spec", href: "https://github.com/whatthehackinsg/ghost-bazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md" },
-  { label: "@whatthehackinsg", href: "https://x.com/whatthehackinsg" },
 ] as const
 
 /**
@@ -59,6 +59,10 @@ export function BottomPanel({ mouse }: Props) {
     raf = requestAnimationFrame(update)
     return () => cancelAnimationFrame(raf)
   }, [mouse, mobile])
+
+  const visibleLinks = HAS_API_BACKEND
+    ? BOTTOM_LINKS
+    : BOTTOM_LINKS.filter((link) => link.label !== "Live Feed")
 
   return (
     <div
@@ -112,7 +116,7 @@ export function BottomPanel({ mouse }: Props) {
       {/* Col 2: Links */}
       <div style={{ display: "flex", flexDirection: "column", gap: mobile ? 12 : 24 }}>
         <ul style={{ listStyle: "none", display: "flex", flexDirection: mobile ? "row" : "column", flexWrap: mobile ? "wrap" : undefined, gap: 8 }}>
-          {BOTTOM_LINKS.map(({ label, href }) => (
+          {visibleLinks.map(({ label, href }) => (
             <li key={label}>
               <LinkItem label={label} href={href} />
             </li>

@@ -22,6 +22,7 @@
     Helvetica, Arial, sans-serif;
   --font-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
   --pad: 24px;
+  --wallet-bar-height: 52px;
   color-scheme: light;
 }
 

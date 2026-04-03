@@ -2,6 +2,7 @@ import { useIsMobile } from "../hooks/useIsMobile"
 import { divider, eyebrow, heading, sectionStyle, bodyText } from "../styles/shared"
 import { ArchitectureSection } from "./ArchitectureSection"
 import { OriginSection } from "./OriginSection"
+import { OWSSection } from "./OWSSection"
 import { ProtocolSection } from "./ProtocolSection"
 import { ValuePropSection } from "./ValuePropSection"
 import { WhySolanaSection } from "./WhySolanaSection"
@@ -19,6 +20,10 @@ export function LandingContent() {
       <div style={divider} />
 
       <OriginSection />
+
+      <div style={divider} />
+
+      <OWSSection />
 
       <div style={divider} />
 

@@ -135,7 +135,7 @@ export function AdminPage({ onBack }: Props) {
   // --- Login ---
   if (view === "login") {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100vh", paddingTop: "var(--wallet-bar-height)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: mobile ? "90%" : 320 }}>
           <div style={{ ...mono, fontSize: "0.65rem", color: "var(--secondary-color)", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 24 }}>
             Authentication Required
@@ -190,7 +190,7 @@ export function AdminPage({ onBack }: Props) {
   // --- Session Detail ---
   if (view === "detail" && detail) {
     return (
-      <div style={{ minHeight: "100vh", padding: mobile ? 16 : 24, maxWidth: 900, margin: "0 auto" }}>
+      <div style={{ minHeight: "100vh", padding: mobile ? 16 : 24, paddingTop: mobile ? 78 : 88, maxWidth: 900, margin: "0 auto" }}>
         <Header
           left={<span onClick={() => { setView("sessions"); setDetail(null) }} style={{ cursor: "pointer" }}>← Sessions</span>}
           right={<span onClick={logout} style={{ cursor: "pointer" }}>Logout</span>}
@@ -217,7 +217,7 @@ export function AdminPage({ onBack }: Props) {
 
   // --- Session List ---
   return (
-    <div style={{ minHeight: "100vh", padding: mobile ? 16 : 24, maxWidth: 1000, margin: "0 auto" }}>
+    <div style={{ minHeight: "100vh", padding: mobile ? 16 : 24, paddingTop: mobile ? 78 : 88, maxWidth: 1000, margin: "0 auto" }}>
       <Header
         left={<span onClick={onBack} style={{ cursor: "pointer" }}>← Exit</span>}
         right={<span onClick={logout} style={{ cursor: "pointer" }}>Logout</span>}

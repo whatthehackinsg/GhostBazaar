@@ -66,7 +66,7 @@ export function CornerIndices({ onTriggerNav }: Props) {
       <div
         style={{
           position: "fixed",
-          top: "var(--pad)",
+          top: "calc(var(--wallet-bar-height) + var(--pad))",
           left: "var(--pad)",
           zIndex: 1000,
           display: "flex",

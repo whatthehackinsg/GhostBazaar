@@ -12,7 +12,7 @@ export function ThemeToggle() {
     <div
       style={{
         position: "fixed",
-        top: "var(--pad)",
+        top: "calc(var(--wallet-bar-height) + var(--pad))",
         right: "var(--pad)",
         zIndex: 1400,
         display: "flex",

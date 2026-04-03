@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import type { CSSProperties } from "react"
+import { HAS_API_BACKEND } from "../api"
 
 export const LANDING_NAV_ITEMS = [
   "Live Feed",
@@ -10,6 +11,10 @@ export const LANDING_NAV_ITEMS = [
   "Architecture",
   "About",
 ] as const
+
+export const ACTIVE_LANDING_NAV_ITEMS = HAS_API_BACKEND
+  ? LANDING_NAV_ITEMS
+  : LANDING_NAV_ITEMS.filter((item) => item !== "Live Feed")
 
 interface Props {
   readonly onNavigate?: (item: string) => void
@@ -82,7 +87,7 @@ export function LandingSideNav({ onNavigate }: Props) {
         <span>Navigate</span>
       </div>
       <div style={stackStyle}>
-        {LANDING_NAV_ITEMS.map((item) => {
+        {ACTIVE_LANDING_NAV_ITEMS.map((item) => {
           const isActive = active === item || (item === "Live Feed" && location.hash === "#/dashboard")
           return (
             <button

@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react"
-import { LANDING_NAV_ITEMS } from "./LandingSideNav"
+import { ACTIVE_LANDING_NAV_ITEMS } from "./LandingSideNav"
 
 interface Props {
   readonly active: boolean
@@ -52,7 +52,7 @@ export function NavOverlay({ active, onClose, onNavigate }: Props) {
           textAlign: "center",
         }}
       >
-        {LANDING_NAV_ITEMS.map((item) => (
+        {ACTIVE_LANDING_NAV_ITEMS.map((item) => (
           <div
             key={item}
             onClick={() => onNavigate?.(item)}

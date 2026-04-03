@@ -139,6 +139,7 @@ export function DashboardPage({ onBack }: Props) {
         minHeight: "auto",
         fontFamily: "var(--font-main)",
         padding: mobile ? "16px" : "24px",
+        paddingTop: mobile ? "78px" : "88px",
         paddingBottom: mobile ? "80px" : "120px",
         maxWidth: 1200,
         margin: "0 auto",
@@ -283,5 +284,4 @@ const DASHBOARD_LINKS = [
   { label: "Protocol Spec", href: "https://github.com/whatthehackinsg/ghost-bazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md" },
   { label: "GitHub", href: "https://github.com/whatthehackinsg/ghost-bazaar" },
   { label: "Documentation", href: "https://github.com/whatthehackinsg/ghost-bazaar/blob/main/ENGINEERING.md" },
-  { label: "@whatthehackinsg", href: "https://x.com/whatthehackinsg" },
 ] as const
