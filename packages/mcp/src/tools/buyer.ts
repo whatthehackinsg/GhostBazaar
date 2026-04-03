@@ -11,19 +11,13 @@ import { createRequire } from "module"
 import { z } from "zod"
 import Decimal from "decimal.js"
 import { v4 as uuidv4 } from "uuid"
-import { Keypair, Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js"
-import {
-  createTransferCheckedInstruction,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token"
+import type { Keypair } from "@solana/web3.js"
 import {
   buildDid,
   type Listing,
-  normalizeAmount,
   objectSigningPayload,
   signEd25519,
   signQuoteAsBuyer,
-  didToPublicKey,
   type RFQ,
 } from "@ghost-bazaar/core"
 import { sanitizeBuyerAction, type BuyerPrivate } from "@ghost-bazaar/strategy"
@@ -371,69 +365,24 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
     },
 
     ghost_bazaar_settle: {
-      description: "Execute settlement — builds Solana USDC transfer with memo, sends it, then POSTs the seller's /execute endpoint for verification",
+      description: "Verify settlement — takes the Solana transaction signature from a MoonPay token_transfer and POSTs the seller's /execute endpoint for verification. Call MoonPay's token_transfer tool FIRST to send USDC, then pass the tx signature here.",
       inputSchema: z.object({
         quote: z.record(z.unknown()).describe("The fully signed quote object"),
+        payment_signature: z.string().describe("Solana transaction signature from MoonPay token_transfer"),
       }),
-      handler: async (input: { quote: Record<string, unknown> }) => {
+      handler: async (input: { quote: Record<string, unknown>; payment_signature: string }) => {
         const quote = input.quote as any
-        const sellerPubkey = didToPublicKey(quote.seller)
-        if (!sellerPubkey) throw new Error("Cannot derive seller pubkey from DID")
+        const txSig = input.payment_signature
 
-        const usdcMint = new PublicKey(config.usdcMint)
-        const amount = normalizeAmount(quote.final_price, config.usdcMint)
-
-        const connection = new Connection(config.rpcUrl, "confirmed")
-        const buyerAta = getAssociatedTokenAddressSync(usdcMint, config.keypair.publicKey)
-        const sellerAta = getAssociatedTokenAddressSync(usdcMint, sellerPubkey)
-
-        // Build transaction: USDC transfer + Memo
-        const { TransactionInstruction } = await import("@solana/web3.js")
-        const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr")
-
-        const tx = new Transaction()
-
-        // 1. SPL Token transferChecked (includes mint for verification)
-        tx.add(
-          createTransferCheckedInstruction(
-            buyerAta,
-            usdcMint,
-            sellerAta,
-            config.keypair.publicKey,
-            amount,
-            6, // USDC decimals
-          ),
-        )
-
-        // 2. Memo instruction per memo_policy
-        if (quote.memo_policy === "quote_id_required" || !quote.memo_policy) {
-          tx.add(
-            new TransactionInstruction({
-              keys: [{ pubkey: config.keypair.publicKey, isSigner: true, isWritable: false }],
-              programId: MEMO_PROGRAM_ID,
-              data: Buffer.from(`GhostBazaar:quote_id:${quote.quote_id}`),
-            }),
-          )
-        } else if (quote.memo_policy === "hash_required") {
-          const { sha256 } = await import("@noble/hashes/sha256")
-          const { canonicalJson } = await import("@ghost-bazaar/core")
-          const hash = Buffer.from(sha256(canonicalJson(quote))).toString("hex")
-          tx.add(
-            new TransactionInstruction({
-              keys: [{ pubkey: config.keypair.publicKey, isSigner: true, isWritable: false }],
-              programId: MEMO_PROGRAM_ID,
-              data: Buffer.from(hash),
-            }),
+        if (!txSig || txSig.length < 80) {
+          throw new Error(
+            "Invalid payment_signature. Use MoonPay's token_transfer tool first to send USDC, " +
+            "then pass the returned transaction signature here.",
           )
         }
-        // memo_policy "optional" — no memo added
-
-        // Send Solana transaction
-        const startMs = Date.now()
-        const txSig = await connection.sendTransaction(tx, [config.keypair])
-        await connection.confirmTransaction(txSig, "confirmed")
 
         // POST seller's /execute endpoint with required headers
+        const startMs = Date.now()
         const quoteB64 = Buffer.from(JSON.stringify(quote)).toString("base64")
         const executeUrl = quote.payment_endpoint ?? `${config.engineUrl}/execute`
 

@@ -10,6 +10,10 @@
         "USDC_MINT": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
         "PINATA_JWT": "<your-pinata-jwt-optional>"
       }
+    },
+    "moonpay": {
+      "command": "mp",
+      "args": ["mcp"]
     }
   }
 }

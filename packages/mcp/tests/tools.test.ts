@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { Connection, Keypair } from "@solana/web3.js"
+import { Keypair } from "@solana/web3.js"
 import { buildDid } from "@ghost-bazaar/core"
 import * as agents from "@ghost-bazaar/agents"
 import { defineBuyerTools, createBuyerState } from "../src/tools/buyer.js"
@@ -143,14 +143,11 @@ describe("Buyer tools", () => {
     expect(parsed.feedback_submitted).toBe(true)
   })
 
-  it("ghost_bazaar_settle auto-submits seller feedback when seller listing is registry-bound", async () => {
+  it("ghost_bazaar_settle verifies MoonPay payment and auto-submits feedback", async () => {
     const sellerKeypair = Keypair.generate()
     const sellerDid = buildDid(sellerKeypair.publicKey)
     const buyerState = createBuyerState()
     recordDealFeedbackSpy.mockResolvedValue({ feedbackIndex: 9n })
-
-    const sendTxSpy = vi.spyOn(Connection.prototype, "sendTransaction").mockResolvedValue("tx-sig-123")
-    const confirmTxSpy = vi.spyOn(Connection.prototype, "confirmTransaction").mockResolvedValue({ value: { err: null } } as any)
 
     const buyerTools = defineBuyerTools({ ...config, pinataJwt: "pinata-test-jwt" }, buyerState)
     buyerState.sessions.set("rfq-001", {
@@ -216,6 +213,9 @@ describe("Buyer tools", () => {
       } as Response
     }) as any
 
+    // Payment already done via MoonPay — pass the tx sig directly
+    const moonpayTxSig = "5" + "A".repeat(86)
+
     const result = await buyerTools.ghost_bazaar_settle.handler({
       quote: {
         quote_id: "quote-001",
@@ -228,19 +228,27 @@ describe("Buyer tools", () => {
         payment_endpoint: "http://seller.example.com/execute",
         expires_at: new Date(Date.now() + 60_000).toISOString(),
         nonce: "0x" + "ab".repeat(32),
-        memo_policy: "quote_id_required",
+        memo_policy: "optional",
         buyer_signature: "ed25519:buyer",
         seller_signature: "ed25519:seller",
       },
+      payment_signature: moonpayTxSig,
     })
 
     expect(recordDealFeedbackSpy).toHaveBeenCalledTimes(1)
     const parsed = JSON.parse(result.content[0].text)
     expect(parsed.feedback_submitted).toBe(true)
     expect(parsed.seller_registry_agent_id).toBe("42")
+    expect(parsed.tx_sig).toBe(moonpayTxSig)
+  })
 
-    sendTxSpy.mockRestore()
-    confirmTxSpy.mockRestore()
+  it("ghost_bazaar_settle rejects invalid payment_signature", async () => {
+    await expect(
+      tools.ghost_bazaar_settle.handler({
+        quote: { quote_id: "quote-001" },
+        payment_signature: "too-short",
+      }),
+    ).rejects.toThrow("Invalid payment_signature")
   })
 })
 
