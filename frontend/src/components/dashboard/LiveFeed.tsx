@@ -20,7 +20,7 @@ const ROLE_STYLE: Record<string, { color: string; fontStyle?: string }> = {
   system: { color: "var(--role-system)", fontStyle: "italic" },
 }
 
-const DEAL_EVENTS = new Set(["QUOTE_COMMITTED"])
+const DEAL_EVENTS = new Set(["QUOTE_COMMITTED", "MOONPAY_SETTLEMENT"])
 
 export function LiveFeed({ events, status, mobile }: Props) {
   const [hoveredIdx, setHoveredIdx] = useState(-1)

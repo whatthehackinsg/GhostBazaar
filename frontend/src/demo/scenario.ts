@@ -103,6 +103,13 @@ export const DEMO_EVENTS: readonly DemoEvent[] = [
     detail: "FlexibleSeller co-signs → dual-signed quote locked at 36.50 USDC",
     delay: 800,
   },
+  {
+    type: "MOONPAY_SETTLEMENT",
+    actor_role: "buyer",
+    state_after: "SETTLED",
+    detail: "36.50 USDC sent via MoonPay → tx confirmed on Solana",
+    delay: 1000,
+  },
 ]
 
 export interface DemoMetrics {
@@ -147,5 +154,5 @@ export const PRIVACY_BREAKDOWN: readonly PrivacyBreakdown[] = [
   { label: "Seller floor price", private: true, mechanism: "Never leaves local state" },
   { label: "Seller target price", private: true, mechanism: "Never leaves local state" },
   { label: "Counter budget compliance", private: true, mechanism: "ZK Groth16 proof" },
-  { label: "Final settlement amount", private: false, mechanism: "Visible on-chain in SPL transfer" },
+  { label: "Final settlement amount", private: false, mechanism: "Visible on-chain via MoonPay transfer" },
 ]
