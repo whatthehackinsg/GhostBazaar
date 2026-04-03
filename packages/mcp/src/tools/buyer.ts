@@ -11,15 +11,9 @@ import { createRequire } from "module"
 import { z } from "zod"
 import Decimal from "decimal.js"
 import { v4 as uuidv4 } from "uuid"
-import { Keypair, Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js"
-import {
-  createTransferCheckedInstruction,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token"
 import {
   buildDid,
   type Listing,
-  normalizeAmount,
   objectSigningPayload,
   signEd25519,
   signQuoteAsBuyer,
@@ -55,13 +49,6 @@ export function createBuyerState(): BuyerState {
     registeredAgent: null,
     registrationAttempted: false,
   }
-}
-
-function explorerUrl(txSig: string, usdcMint: string): string {
-  // Infer cluster from USDC mint address
-  const isMainnet = usdcMint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-  const clusterParam = isMainnet ? "" : "?cluster=devnet"
-  return `https://explorer.solana.com/tx/${txSig}${clusterParam}`
 }
 
 async function loadBudgetZk() {
@@ -371,67 +358,65 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
     },
 
     ghost_bazaar_settle: {
-      description: "Execute settlement — builds Solana USDC transfer with memo, sends it, then POSTs the seller's /execute endpoint for verification",
+      description:
+        "Prepare settlement via MoonPay — returns transfer parameters for the MoonPay token_transfer tool. " +
+        "After calling this, use MoonPay's token_transfer with the returned parameters to execute the USDC payment, " +
+        "then call ghost_bazaar_confirm_settlement with the transaction signature.",
       inputSchema: z.object({
         quote: z.record(z.unknown()).describe("The fully signed quote object"),
+        moonpay_wallet: z.string().optional().describe("MoonPay wallet name to send from (default: 'ghost-bazaar')"),
       }),
-      handler: async (input: { quote: Record<string, unknown> }) => {
+      handler: async (input: { quote: Record<string, unknown>; moonpay_wallet?: string }) => {
         const quote = input.quote as any
+
+        if (!quote.buyer_signature || !quote.seller_signature) {
+          throw new Error("Quote must be fully signed (both buyer and seller) before settlement")
+        }
+
         const sellerPubkey = didToPublicKey(quote.seller)
         if (!sellerPubkey) throw new Error("Cannot derive seller pubkey from DID")
 
-        const usdcMint = new PublicKey(config.usdcMint)
-        const amount = normalizeAmount(quote.final_price, config.usdcMint)
+        // Determine chain — use devnet if USDC mint is the devnet address
+        const isMainnet = config.usdcMint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        const chain = isMainnet ? "solana" : "solana-devnet"
+        const walletName = input.moonpay_wallet ?? "ghost-bazaar"
 
-        const connection = new Connection(config.rpcUrl, "confirmed")
-        const buyerAta = getAssociatedTokenAddressSync(usdcMint, config.keypair.publicKey)
-        const sellerAta = getAssociatedTokenAddressSync(usdcMint, sellerPubkey)
-
-        // Build transaction: USDC transfer + Memo
-        const { TransactionInstruction } = await import("@solana/web3.js")
-        const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr")
-
-        const tx = new Transaction()
-
-        // 1. SPL Token transferChecked (includes mint for verification)
-        tx.add(
-          createTransferCheckedInstruction(
-            buyerAta,
-            usdcMint,
-            sellerAta,
-            config.keypair.publicKey,
-            amount,
-            6, // USDC decimals
-          ),
-        )
-
-        // 2. Memo instruction per memo_policy
-        if (quote.memo_policy === "quote_id_required" || !quote.memo_policy) {
-          tx.add(
-            new TransactionInstruction({
-              keys: [{ pubkey: config.keypair.publicKey, isSigner: true, isWritable: false }],
-              programId: MEMO_PROGRAM_ID,
-              data: Buffer.from(`GhostBazaar:quote_id:${quote.quote_id}`),
-            }),
-          )
-        } else if (quote.memo_policy === "hash_required") {
-          const { sha256 } = await import("@noble/hashes/sha256")
-          const { canonicalJson } = await import("@ghost-bazaar/core")
-          const hash = Buffer.from(sha256(canonicalJson(quote))).toString("hex")
-          tx.add(
-            new TransactionInstruction({
-              keys: [{ pubkey: config.keypair.publicKey, isSigner: true, isWritable: false }],
-              programId: MEMO_PROGRAM_ID,
-              data: Buffer.from(hash),
-            }),
-          )
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify({
+                action: "moonpay_transfer",
+                instruction: "Use MoonPay token_transfer with these parameters, then call ghost_bazaar_confirm_settlement with the tx signature",
+                moonpay_transfer_params: {
+                  wallet: walletName,
+                  chain,
+                  token: config.usdcMint,
+                  amount: new Decimal(quote.final_price).toNumber(),
+                  to: sellerPubkey.toBase58(),
+                },
+                quote_id: quote.quote_id,
+                rfq_id: quote.rfq_id,
+                final_price: quote.final_price,
+                seller: quote.seller,
+              }),
+            },
+          ],
         }
-        // memo_policy "optional" — no memo added
+      },
+    },
 
-        // Send Solana transaction
+    ghost_bazaar_confirm_settlement: {
+      description:
+        "Confirm settlement after MoonPay token_transfer completes — POSTs the transaction signature to the seller's /execute endpoint for verification",
+      inputSchema: z.object({
+        rfq_id: z.string().describe("RFQ identifier"),
+        tx_sig: z.string().describe("Transaction signature from MoonPay token_transfer"),
+        quote: z.record(z.unknown()).describe("The fully signed quote object"),
+      }),
+      handler: async (input: { rfq_id: string; tx_sig: string; quote: Record<string, unknown> }) => {
+        const quote = input.quote as any
         const startMs = Date.now()
-        const txSig = await connection.sendTransaction(tx, [config.keypair])
-        await connection.confirmTransaction(txSig, "confirmed")
 
         // POST seller's /execute endpoint with required headers
         const quoteB64 = Buffer.from(JSON.stringify(quote)).toString("base64")
@@ -441,12 +426,15 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
           method: "POST",
           headers: {
             "X-Ghost-Bazaar-Quote": quoteB64,
-            "Payment-Signature": txSig,
+            "Payment-Signature": input.tx_sig,
             "Content-Type": "application/json",
           },
         })
 
         const settlementMs = Date.now() - startMs
+        const isMainnet = config.usdcMint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        const clusterParam = isMainnet ? "" : "?cluster=devnet"
+        const explorerLink = `https://explorer.solana.com/tx/${input.tx_sig}${clusterParam}`
 
         if (!executeRes.ok) {
           const errBody = await executeRes.json().catch(() => ({}))
@@ -455,8 +443,8 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
               {
                 type: "text" as const,
                 text: JSON.stringify({
-                  tx_sig: txSig,
-                  explorer_url: explorerUrl(txSig, config.usdcMint),
+                  tx_sig: input.tx_sig,
+                  explorer_url: explorerLink,
                   settlement_ms: settlementMs,
                   settlement_error: errBody,
                 }),
@@ -468,10 +456,7 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
         const receipt = await executeRes.json()
         const sellerRegistryAgentId = await resolveSellerRegistryAgentId(quote)
 
-        // Engine-verified settlement: payment confirmed but service not yet delivered
         const isPendingSeller = receipt?.delivery_status === "pending_seller"
-
-        // Only auto-submit feedback when seller actually executed service
         const feedbackSubmitted = isPendingSeller
           ? false
           : sellerRegistryAgentId
@@ -483,15 +468,16 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
             {
               type: "text" as const,
               text: JSON.stringify({
-                tx_sig: txSig,
-                explorer_url: explorerUrl(txSig, config.usdcMint),
+                tx_sig: input.tx_sig,
+                explorer_url: explorerLink,
                 settlement_ms: settlementMs,
                 receipt,
                 payment_verified: true,
+                payment_method: "moonpay",
                 service_delivered: !isPendingSeller,
                 feedback_submitted: feedbackSubmitted,
                 ...(isPendingSeller && {
-                  note: "Payment verified on-chain. Seller notified via engine event. Use check_events to track.",
+                  note: "Payment verified on-chain via MoonPay. Seller notified via engine event. Use check_events to track.",
                 }),
                 seller_registry_agent_id: sellerRegistryAgentId,
               }),
