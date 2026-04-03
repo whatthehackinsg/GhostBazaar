@@ -20,7 +20,7 @@ primary_region = "iad"
   ENFORCER_INTERVAL_MS = "5000"
   COSIGN_TIMEOUT_MS = "60000"
   # CORS — comma-separated allowed origins for frontend
-  ALLOWED_ORIGINS = "https://ghost-bazaar-protocol.vercel.app"
+  ALLOWED_ORIGINS = "https://ghost-bazaar.vercel.app"
   # Set to "false" to disable seed demo listings
   # SEED_LISTINGS = "false"
 
