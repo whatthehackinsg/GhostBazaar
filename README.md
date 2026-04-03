@@ -151,7 +151,7 @@ frontend/      — Vite + React landing page / dashboard UI
 
 **Live frontend:** [ghost-bazaar.vercel.app](https://ghost-bazaar.vercel.app)
 
-**Hackathon frontend update:** MoonPay wallet connect, legal pages for MoonPay onboarding, and an OWS narrative section are now deployed on the standalone Vercel frontend. The landing page can run without the Fly.io engine; dashboard and admin routes still depend on the backend.
+**Hackathon frontend update:** MoonPay wallet connect, legal pages for MoonPay onboarding, and an OWS narrative section are now deployed on the standalone Vercel frontend. The landing page can run without the Fly.io engine; dashboard and admin routes still depend on the backend. MoonPay currently powers the frontend wallet layer and presentation flow; the underlying buyer and seller agent runtime remains Solana keypair-based.
 
 **Documentation:**
 
@@ -177,7 +177,6 @@ frontend/      — Vite + React landing page / dashboard UI
 
 - [Design Spec](./docs/superpowers/specs/2026-03-13-bidlayer-solana-agents-design.md)
 - [Implementation Plan](./docs/superpowers/plans/2026-03-14-bidlayer-implementation.md)
-- [OWS Hackathon Frontend Spec](./docs/superpowers/specs/2026-04-03-ows-hackathon-frontend-design.md)
 - [Market Gap Research](./docs/research/2026-03-market-gap/README.md)
 - [Legacy docs (old specs, early planning)](./docs/legacy/)
 
@@ -186,6 +185,7 @@ frontend/      — Vite + React landing page / dashboard UI
 The public frontend is a separate Vercel deployment rooted at `frontend/`:
 
 - Production site: `https://ghost-bazaar.vercel.app`
+- Engine backend: `https://ghost-bazaar-engine.fly.dev`
 - Framework: Vite + React
 - Deploy target: Vercel project `ghost-bazaar`
 
@@ -197,7 +197,7 @@ Frontend environment variables:
 Behavior by environment:
 
 - Landing page works without `VITE_API_URL`
-- Dashboard and admin routes require the backend
+- Dashboard and admin routes require the backend and will show disconnected state if the Fly engine is offline
 - If MoonPay auth fails at runtime, the wallet bar falls back to opening `moonpay.com`
 
 ## Roadmap
