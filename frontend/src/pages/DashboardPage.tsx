@@ -281,7 +281,7 @@ export function DashboardPage({ onBack }: Props) {
 }
 
 const DASHBOARD_LINKS = [
-  { label: "Protocol Spec", href: "https://github.com/whatthehackinsg/ghost-bazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md" },
-  { label: "GitHub", href: "https://github.com/whatthehackinsg/ghost-bazaar" },
-  { label: "Documentation", href: "https://github.com/whatthehackinsg/ghost-bazaar/blob/main/ENGINEERING.md" },
+  { label: "Protocol Spec", href: "https://github.com/whatthehackinsg/GhostBazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md" },
+  { label: "GitHub", href: "https://github.com/whatthehackinsg/GhostBazaar" },
+  { label: "Documentation", href: "https://github.com/whatthehackinsg/GhostBazaar/blob/main/ENGINEERING.md" },
 ] as const

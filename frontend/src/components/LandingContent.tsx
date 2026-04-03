@@ -281,8 +281,8 @@ export function LandingContent() {
           <MoonPayMark />
         </div>
         <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-          <CtaButton label="Read the Spec" href="https://github.com/whatthehackinsg/ghost-bazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md" primary />
-          <CtaButton label="View on GitHub" href="https://github.com/whatthehackinsg/ghost-bazaar" />
+          <CtaButton label="Read the Spec" href="https://github.com/whatthehackinsg/GhostBazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md" primary />
+          <CtaButton label="View on GitHub" href="https://github.com/whatthehackinsg/GhostBazaar" />
         </div>
       </section>
     </div>

@@ -10,9 +10,9 @@ interface Props {
 
 const BOTTOM_LINKS = [
   { label: "Live Feed", href: "#/dashboard" },
-  { label: "Documentation", href: "https://github.com/whatthehackinsg/ghost-bazaar/blob/main/ENGINEERING.md" },
-  { label: "GitHub", href: "https://github.com/whatthehackinsg/ghost-bazaar" },
-  { label: "Protocol Spec", href: "https://github.com/whatthehackinsg/ghost-bazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md" },
+  { label: "Documentation", href: "https://github.com/whatthehackinsg/GhostBazaar/blob/main/ENGINEERING.md" },
+  { label: "GitHub", href: "https://github.com/whatthehackinsg/GhostBazaar" },
+  { label: "Protocol Spec", href: "https://github.com/whatthehackinsg/GhostBazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md" },
 ] as const
 
 /**

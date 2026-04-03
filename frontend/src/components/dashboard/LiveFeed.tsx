@@ -63,6 +63,22 @@ export function LiveFeed({ events, status, mobile }: Props) {
         </span>
       </div>
 
+      {status === "disconnected" && (
+        <div
+          style={{
+            marginBottom: 16,
+            padding: "10px 12px",
+            border: "1px solid var(--hairline)",
+            borderRadius: 4,
+            color: "var(--secondary-color)",
+            fontSize: "0.68rem",
+            lineHeight: 1.6,
+          }}
+        >
+          Frontend is live. The engine feed is offline, sleeping, or unreachable, so stats may stay blank until the backend reconnects.
+        </div>
+      )}
+
       {/* Event list — fixed height with scroll */}
       <div style={{ overflow: "auto", maxHeight: mobile ? 180 : 360 }}>
         {events.length === 0 ? (
@@ -127,8 +143,9 @@ function EmptyState({ status }: { readonly status: FeedStatus }) {
 
   if (status === "disconnected") {
     return (
-      <div style={{ textAlign: "center", paddingTop: 120, color: "var(--status-error)", opacity: 0.7 }}>
-        Reconnecting...
+      <div style={{ textAlign: "center", paddingTop: 120, color: "var(--status-error)", opacity: 0.7, lineHeight: 1.7 }}>
+        <div>Engine feed unavailable.</div>
+        <div style={{ color: "var(--secondary-color)" }}>The frontend is up, but live backend data is not connected.</div>
       </div>
     )
   }

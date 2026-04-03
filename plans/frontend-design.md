@@ -203,12 +203,12 @@ return page === "dashboard"
 | Nav "Protocol" | scroll to protocol section |
 | Nav "Privacy" | scroll to privacy section |
 | Nav "About" | scroll to CTA section |
-| CTA "Read the Spec" | `https://github.com/whatthehackinsg/ghost-bazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md` |
-| CTA "View on GitHub" | `https://github.com/whatthehackinsg/ghost-bazaar` |
-| Bottom "Documentation" | `https://github.com/whatthehackinsg/ghost-bazaar/blob/main/ENGINEERING.md` |
-| Bottom "GitHub" | `https://github.com/whatthehackinsg/ghost-bazaar` |
+| CTA "Read the Spec" | `https://github.com/whatthehackinsg/GhostBazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md` |
+| CTA "View on GitHub" | `https://github.com/whatthehackinsg/GhostBazaar` |
+| Bottom "Documentation" | `https://github.com/whatthehackinsg/GhostBazaar/blob/main/ENGINEERING.md` |
+| Bottom "GitHub" | `https://github.com/whatthehackinsg/GhostBazaar` |
 | Bottom "Live Feed" | `#/dashboard` |
-| Bottom "Protocol Spec" | `https://github.com/whatthehackinsg/ghost-bazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md` |
+| Bottom "Protocol Spec" | `https://github.com/whatthehackinsg/GhostBazaar/blob/main/GHOST-BAZAAR-SPEC-v4.md` |
 
 ---
 

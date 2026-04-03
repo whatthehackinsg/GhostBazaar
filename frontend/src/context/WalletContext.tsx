@@ -50,8 +50,10 @@ interface WalletState {
   readonly isConnected: boolean
   readonly isConnecting: boolean
   readonly error: string | null
+  readonly isFallbackMode: boolean
   readonly connect: () => Promise<void>
   readonly disconnect: () => void
+  readonly openMoonPay: () => void
 }
 
 const defaultValue: WalletState = {
@@ -60,8 +62,10 @@ const defaultValue: WalletState = {
   isConnected: false,
   isConnecting: false,
   error: null,
+  isFallbackMode: false,
   connect: async () => {},
   disconnect: () => {},
+  openMoonPay: () => {},
 }
 
 const WalletContext = createContext<WalletState>(defaultValue)
@@ -236,6 +240,7 @@ export function WalletProvider({ children }: { readonly children: ReactNode }) {
   const [isConnected, setIsConnected] = useState(initialState.isConnected)
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isFallbackMode, setIsFallbackMode] = useState(false)
 
   const sdkRef = useRef<MoonPayAuthSdkInstance | null>(null)
   const initializedRef = useRef(false)
@@ -276,7 +281,13 @@ export function WalletProvider({ children }: { readonly children: ReactNode }) {
     setIsConnected(false)
     setIsConnecting(false)
     setError(null)
+    setIsFallbackMode(false)
     clearStoredWalletState()
+  }
+
+  const openMoonPay = () => {
+    setIsFallbackMode(true)
+    window.open(MOONPAY_URL, "_blank", "noopener,noreferrer")
   }
 
   const connect = async () => {
@@ -284,12 +295,13 @@ export function WalletProvider({ children }: { readonly children: ReactNode }) {
 
     if (!apiKey) {
       setError("MoonPay key is not configured.")
-      window.open(MOONPAY_URL, "_blank", "noopener,noreferrer")
+      openMoonPay()
       return
     }
 
     setIsConnecting(true)
     setError(null)
+    setIsFallbackMode(false)
 
     try {
       const sdk = sdkRef.current ?? await createMoonPaySdk(apiKey)
@@ -306,13 +318,13 @@ export function WalletProvider({ children }: { readonly children: ReactNode }) {
 
       if (!snapshot.isConnected) {
         setError("MoonPay did not return a wallet connection.")
-        window.open(MOONPAY_URL, "_blank", "noopener,noreferrer")
+        openMoonPay()
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "MoonPay login failed."
       setError(message)
       console.error("MoonPay connect failed", err)
-      window.open(MOONPAY_URL, "_blank", "noopener,noreferrer")
+      openMoonPay()
     } finally {
       setIsConnecting(false)
     }
@@ -325,10 +337,12 @@ export function WalletProvider({ children }: { readonly children: ReactNode }) {
       isConnected,
       isConnecting,
       error,
+      isFallbackMode,
       connect,
       disconnect,
+      openMoonPay,
     }),
-    [address, balance, isConnected, isConnecting, error],
+    [address, balance, isConnected, isConnecting, error, isFallbackMode],
   )
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>

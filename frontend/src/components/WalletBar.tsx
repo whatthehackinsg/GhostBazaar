@@ -4,7 +4,17 @@ import { formatWalletLabel, useWallet } from "../context/WalletContext"
 
 export function WalletBar() {
   const mobile = useIsMobile()
-  const { address, balance, isConnected, isConnecting, error, connect, disconnect } = useWallet()
+  const {
+    address,
+    balance,
+    isConnected,
+    isConnecting,
+    error,
+    isFallbackMode,
+    connect,
+    disconnect,
+    openMoonPay,
+  } = useWallet()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -190,7 +200,14 @@ export function WalletBar() {
           ) : (
             <button
               type="button"
-              onClick={() => void connect()}
+              onClick={() => {
+                if (isFallbackMode) {
+                  openMoonPay()
+                  return
+                }
+
+                void connect()
+              }}
               disabled={isConnecting}
               style={{
                 border: "1px solid var(--text-color)",
@@ -207,7 +224,7 @@ export function WalletBar() {
                 opacity: isConnecting ? 0.7 : 1,
               }}
             >
-              {isConnecting ? "Connecting..." : "Connect Wallet"}
+              {isConnecting ? "Connecting..." : isFallbackMode ? "Open MoonPay" : "Connect Wallet"}
             </button>
           )}
         </div>
@@ -225,7 +242,7 @@ export function WalletBar() {
             letterSpacing: "0.04em",
           }}
         >
-          MoonPay fallback: {error}
+          Embedded MoonPay wallet is unavailable. Use Open MoonPay instead. Details: {error}
         </div>
       )}
     </div>
