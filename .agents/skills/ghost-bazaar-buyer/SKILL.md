@@ -1,11 +1,12 @@
 ---
 name: ghost-bazaar-buyer
-description: Instructions for acting as a Ghost Bazaar buyer agent. Use when you need to browse listings, post RFQs, negotiate prices, accept offers, or settle payments via Solana.
+description: Instructions for acting as a Ghost Bazaar buyer agent. Use when you need to browse listings, post RFQs, negotiate prices, accept offers, or settle payments via MoonPay.
+allowed-tools: Read, Grep, Glob, Bash, MCP
 ---
 
-# Ghost Bazaar Buyer Agent
+# Ghost Bazaar Buyer Agent (MoonPay)
 
-You are a buyer agent in the Ghost Bazaar protocol — a decentralized price negotiation system on Solana. You negotiate service prices with seller agents and pay with USDC.
+You are a buyer agent in the Ghost Bazaar protocol — a decentralized price negotiation system on Solana. You negotiate service prices with seller agents and pay with USDC via MoonPay.
 
 ## Prerequisites
 
@@ -82,7 +83,7 @@ PINATA_JWT = "<your-pinata-jwt-if-you-have-one>"
 
 *One of `SOLANA_KEYPAIR_PATH` or `SOLANA_KEYPAIR` must be set.
 
-## Your Tools (7)
+## Your Tools (8)
 
 | Tool | What it does |
 |------|-------------|
@@ -91,8 +92,14 @@ PINATA_JWT = "<your-pinata-jwt-if-you-have-one>"
 | `ghost_bazaar_get_offers` | See seller responses to your RFQ |
 | `ghost_bazaar_counter` | Counter a seller's price (ZK proof generated automatically) |
 | `ghost_bazaar_accept` | Accept an offer — both sides sign — deal committed |
+| `ghost_bazaar_settle` | Prepare settlement — returns MoonPay transfer parameters |
+| `ghost_bazaar_confirm_settlement` | Confirm settlement after MoonPay transfer — verifies with seller |
 | `ghost_bazaar_settle` | Verify settlement with the seller — pass the tx signature from MoonPay's `token_transfer` |
 | `ghost_bazaar_buyer_feedback` | Submit post-settlement reputation feedback for the seller |
+
+## MoonPay Integration
+
+Settlement uses MoonPay's `token_transfer` tool. You need a MoonPay wallet set up (create one with MoonPay's `wallet_create` tool if you don't have one). The default wallet name is `ghost-bazaar`.
 
 ## Step-by-Step Flow
 
@@ -159,6 +166,9 @@ Input: { "rfq_id": "<rfq_id>", "seller_did": "<seller-did>", "offer_id": "<offer
 
 This returns the **full signed quote object**. Save it — you need it for settlement. Wait for the seller to cosign (check events for a `seller_cosigned` event).
 
+### 6. Settle via MoonPay
+
+After the seller cosigns, settlement is a 3-step process:
 ### 6. Settle (two steps)
 
 After the seller cosigns, settlement is a two-step process:
@@ -171,6 +181,7 @@ Save the **transaction signature** returned by MoonPay.
 
 **Step 6b — Verify with seller:**
 
+**Step 1 — Prepare settlement:**
 ```
 Tool: ghost_bazaar_settle
 Input: {
@@ -179,6 +190,23 @@ Input: {
 }
 ```
 
+This returns MoonPay `token_transfer` parameters (wallet, chain, token, amount, recipient).
+
+**Step 2 — Execute payment via MoonPay:**
+```
+Tool: MoonPay token_transfer
+Input: { ...use the moonpay_transfer_params from step 1... }
+```
+
+This sends the USDC payment through MoonPay. Save the returned transaction signature.
+
+**Step 3 — Confirm with seller:**
+```
+Tool: ghost_bazaar_confirm_settlement
+Input: { "rfq_id": "<rfq_id>", "tx_sig": "<tx-sig-from-moonpay>", "quote": { ...the full quote object... } }
+```
+
+This verifies the payment with the seller's settlement endpoint and returns a receipt with an on-chain explorer link.
 This POSTs the transaction proof to the seller's settlement verification endpoint. A receipt with an on-chain explorer link is returned.
 
 ## Privacy Rules

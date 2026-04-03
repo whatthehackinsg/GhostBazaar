@@ -34,6 +34,7 @@ export function DemoMetricsPanel({ metrics, mobile }: Props) {
         <MetricRow label="ZK proofs verified" value={`${metrics.zk_proofs_verified}  ✓`} highlight />
         <MetricRow label="negotiation time" value={`${(metrics.negotiation_time_ms / 1000).toFixed(1)}s`} />
         <MetricRow label="final price" value={`${metrics.final_price} USDC`} />
+        <MetricRow label="settled via" value="MoonPay ✓" highlight />
         <MetricRow label="anchor price" value={`${metrics.anchor_price} USDC`} />
         <MetricRow label="savings vs budget" value={`${metrics.savings_vs_budget} USDC (${metrics.savings_percent}%)`} highlight />
       </div>

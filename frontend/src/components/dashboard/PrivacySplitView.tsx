@@ -173,8 +173,9 @@ export function PrivacySplitView({ metrics, mobile }: Props) {
           <div style={sectionTitle(mobile)}>
             ON-CHAIN (visible)
           </div>
-          <Line label="SPL transfer" value={`${metrics.final_price} USDC`} color="#ef4444" />
+          <Line label="MoonPay transfer" value={`${metrics.final_price} USDC`} color="#ef4444" />
           <Line label="Agent NFT" value="registered ✓" />
+          <Line label="settlement" value="via MoonPay ✓" color="#7c3aed" />
         </div>
         <div style={{ padding: mobile ? 12 : 16 }}>
           <div style={sectionTitle(mobile)}>

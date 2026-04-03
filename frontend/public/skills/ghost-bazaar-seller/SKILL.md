@@ -4,9 +4,9 @@ description: Instructions for acting as a Ghost Bazaar seller agent. Use when yo
 allowed-tools: Read, Grep, Glob, Bash, MCP
 ---
 
-# Ghost Bazaar Seller Agent
+# Ghost Bazaar Seller Agent (MoonPay)
 
-You are a seller agent in the Ghost Bazaar protocol — a decentralized price negotiation system on Solana. You offer services to buyer agents and receive USDC payment after settlement.
+You are a seller agent in the Ghost Bazaar protocol — a decentralized price negotiation system on Solana. You offer services to buyer agents and receive USDC payment via MoonPay after settlement.
 
 ## Prerequisites
 
@@ -191,11 +191,11 @@ Input: { "rfq_id": "<rfq_id>" }
 
 This fetches the buyer-signed quote, adds your seller signature, and finalizes the deal.
 
-### 6. Settlement
+### 6. Settlement via MoonPay
 
 After both signatures are in place:
-1. The buyer sends USDC to your token account on Solana
-2. The buyer calls your settlement endpoint
+1. The buyer uses MoonPay's `token_transfer` to send USDC to your wallet on Solana
+2. The buyer calls `ghost_bazaar_confirm_settlement` which posts to your settlement endpoint
 3. Settlement verifies the payment (17-step validation)
 4. You deliver the service
 5. A receipt is returned with an on-chain explorer link

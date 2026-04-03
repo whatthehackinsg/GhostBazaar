@@ -51,13 +51,6 @@ export function createBuyerState(): BuyerState {
   }
 }
 
-function explorerUrl(txSig: string, usdcMint: string): string {
-  // Infer cluster from USDC mint address
-  const isMainnet = usdcMint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
-  const clusterParam = isMainnet ? "" : "?cluster=devnet"
-  return `https://explorer.solana.com/tx/${txSig}${clusterParam}`
-}
-
 async function loadBudgetZk() {
   try {
     return await import("@ghost-bazaar/zk")
@@ -365,6 +358,65 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
     },
 
     ghost_bazaar_settle: {
+      description:
+        "Prepare settlement via MoonPay — returns transfer parameters for the MoonPay token_transfer tool. " +
+        "After calling this, use MoonPay's token_transfer with the returned parameters to execute the USDC payment, " +
+        "then call ghost_bazaar_confirm_settlement with the transaction signature.",
+      inputSchema: z.object({
+        quote: z.record(z.unknown()).describe("The fully signed quote object"),
+        moonpay_wallet: z.string().optional().describe("MoonPay wallet name to send from (default: 'ghost-bazaar')"),
+      }),
+      handler: async (input: { quote: Record<string, unknown>; moonpay_wallet?: string }) => {
+        const quote = input.quote as any
+
+        if (!quote.buyer_signature || !quote.seller_signature) {
+          throw new Error("Quote must be fully signed (both buyer and seller) before settlement")
+        }
+
+        const sellerPubkey = didToPublicKey(quote.seller)
+        if (!sellerPubkey) throw new Error("Cannot derive seller pubkey from DID")
+
+        // Determine chain — use devnet if USDC mint is the devnet address
+        const isMainnet = config.usdcMint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        const chain = isMainnet ? "solana" : "solana-devnet"
+        const walletName = input.moonpay_wallet ?? "ghost-bazaar"
+
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify({
+                action: "moonpay_transfer",
+                instruction: "Use MoonPay token_transfer with these parameters, then call ghost_bazaar_confirm_settlement with the tx signature",
+                moonpay_transfer_params: {
+                  wallet: walletName,
+                  chain,
+                  token: config.usdcMint,
+                  amount: new Decimal(quote.final_price).toNumber(),
+                  to: sellerPubkey.toBase58(),
+                },
+                quote_id: quote.quote_id,
+                rfq_id: quote.rfq_id,
+                final_price: quote.final_price,
+                seller: quote.seller,
+              }),
+            },
+          ],
+        }
+      },
+    },
+
+    ghost_bazaar_confirm_settlement: {
+      description:
+        "Confirm settlement after MoonPay token_transfer completes — POSTs the transaction signature to the seller's /execute endpoint for verification",
+      inputSchema: z.object({
+        rfq_id: z.string().describe("RFQ identifier"),
+        tx_sig: z.string().describe("Transaction signature from MoonPay token_transfer"),
+        quote: z.record(z.unknown()).describe("The fully signed quote object"),
+      }),
+      handler: async (input: { rfq_id: string; tx_sig: string; quote: Record<string, unknown> }) => {
+        const quote = input.quote as any
+        const startMs = Date.now()
       description: "Verify settlement — takes the Solana transaction signature from a MoonPay token_transfer and POSTs the seller's /execute endpoint for verification. Call MoonPay's token_transfer tool FIRST to send USDC, then pass the tx signature here.",
       inputSchema: z.object({
         quote: z.record(z.unknown()).describe("The fully signed quote object"),
@@ -390,12 +442,15 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
           method: "POST",
           headers: {
             "X-Ghost-Bazaar-Quote": quoteB64,
-            "Payment-Signature": txSig,
+            "Payment-Signature": input.tx_sig,
             "Content-Type": "application/json",
           },
         })
 
         const settlementMs = Date.now() - startMs
+        const isMainnet = config.usdcMint === "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        const clusterParam = isMainnet ? "" : "?cluster=devnet"
+        const explorerLink = `https://explorer.solana.com/tx/${input.tx_sig}${clusterParam}`
 
         if (!executeRes.ok) {
           const errBody = await executeRes.json().catch(() => ({}))
@@ -404,8 +459,8 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
               {
                 type: "text" as const,
                 text: JSON.stringify({
-                  tx_sig: txSig,
-                  explorer_url: explorerUrl(txSig, config.usdcMint),
+                  tx_sig: input.tx_sig,
+                  explorer_url: explorerLink,
                   settlement_ms: settlementMs,
                   settlement_error: errBody,
                 }),
@@ -417,10 +472,7 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
         const receipt = await executeRes.json()
         const sellerRegistryAgentId = await resolveSellerRegistryAgentId(quote)
 
-        // Engine-verified settlement: payment confirmed but service not yet delivered
         const isPendingSeller = receipt?.delivery_status === "pending_seller"
-
-        // Only auto-submit feedback when seller actually executed service
         const feedbackSubmitted = isPendingSeller
           ? false
           : sellerRegistryAgentId
@@ -432,15 +484,16 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
             {
               type: "text" as const,
               text: JSON.stringify({
-                tx_sig: txSig,
-                explorer_url: explorerUrl(txSig, config.usdcMint),
+                tx_sig: input.tx_sig,
+                explorer_url: explorerLink,
                 settlement_ms: settlementMs,
                 receipt,
                 payment_verified: true,
+                payment_method: "moonpay",
                 service_delivered: !isPendingSeller,
                 feedback_submitted: feedbackSubmitted,
                 ...(isPendingSeller && {
-                  note: "Payment verified on-chain. Seller notified via engine event. Use check_events to track.",
+                  note: "Payment verified on-chain via MoonPay. Seller notified via engine event. Use check_events to track.",
                 }),
                 seller_registry_agent_id: sellerRegistryAgentId,
               }),
