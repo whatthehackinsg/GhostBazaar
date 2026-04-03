@@ -12,6 +12,14 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    resolve: {
+      alias: {
+        events: "events/",
+      },
+    },
+    optimizeDeps: {
+      include: ["events"],
+    },
     server: {
       port: 5173,
       proxy: {

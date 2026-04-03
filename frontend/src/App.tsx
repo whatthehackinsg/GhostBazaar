@@ -2,6 +2,8 @@ import { useMousePosition } from "./hooks/useMousePosition"
 import { useHash } from "./hooks/useHash"
 import { CustomCursor } from "./components/CustomCursor"
 import { ThemeToggle } from "./components/ThemeToggle"
+import { WalletBar } from "./components/WalletBar"
+import { WalletProvider } from "./context/WalletContext"
 import { LandingPage } from "./pages/LandingPage"
 import { DashboardPage } from "./pages/DashboardPage"
 import { AdminPage } from "./pages/AdminPage"
@@ -16,6 +18,14 @@ import { AdminPage } from "./pages/AdminPage"
  *   #/admin        Admin panel (hidden, no public links)
  */
 export function App() {
+  return (
+    <WalletProvider>
+      <AppShell />
+    </WalletProvider>
+  )
+}
+
+function AppShell() {
   const mouse = useMousePosition()
   const hash = useHash()
 
@@ -41,6 +51,7 @@ export function App() {
 
   return (
     <>
+      <WalletBar />
       <CustomCursor mouse={mouse} />
       <ThemeToggle />
       {renderPage()}

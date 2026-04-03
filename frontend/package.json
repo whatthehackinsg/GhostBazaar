@@ -16,6 +16,8 @@
     "vite": "^8.0.1"
   },
   "dependencies": {
+    "@moonpay/auth-sdk": "^0.1.48",
+    "events": "^3.3.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   }
