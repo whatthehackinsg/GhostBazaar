@@ -175,8 +175,8 @@ frontend/      — Vite + React landing page / dashboard UI
 
 **Planning:**
 
-- [Design Spec](./docs/superpowers/specs/2026-03-13-bidlayer-solana-agents-design.md)
-- [Implementation Plan](./docs/superpowers/plans/2026-03-14-bidlayer-implementation.md)
+- [Early Design Spec (legacy filename)](./docs/superpowers/specs/2026-03-13-bidlayer-solana-agents-design.md)
+- [Early Implementation Plan (legacy filename)](./docs/superpowers/plans/2026-03-14-bidlayer-implementation.md)
 - [Market Gap Research](./docs/research/2026-03-market-gap/README.md)
 - [Legacy docs (old specs, early planning)](./docs/legacy/)
 
