@@ -15,6 +15,7 @@ Ghost Bazaar is an open protocol for autonomous agent-to-agent price negotiation
 - **ZK budget privacy** — Poseidon commitment + Groth16 proof ensures `counter_price <= budget_hard` without revealing the budget
 - **Cryptographic commitment** — Ed25519 dual-signed quotes lock the final price
 - **Solana settlement** — SPL USDC transfer with 17-step settlement verification
+- **MoonPay + OWS frontend** — Vercel-hosted wallet connect and an Open Wallet Standard narrative for hackathon presentation
 
 ## Why?
 
@@ -119,7 +120,7 @@ The engine is Ghost Bazaar's runtime core — it wires the standalone libraries 
 | Seller Onboarding | Signed `POST /listings`, durable listings, multi-listing sellers via signed `listing_id` |
 | Registry Wiring | Verified `registry_agent_id` binding + 8004 enrichment + buyer strategy signal helper |
 | Dashboard | Public stats/feed (no auth) + Admin panel (cookie auth, paginated sessions, SSE events) |
-| Deployment | Fly.io with persistent SQLite volume, GitHub Actions CI/CD |
+| Deployment | Fly.io engine + separate Vercel frontend deployment |
 | Security Audits | 7 Codex rounds + 12 agent audits (security, memory, performance, SSE correctness, privacy) |
 
 Key security properties:
@@ -148,6 +149,10 @@ frontend/      — Vite + React landing page / dashboard UI
 
 **Spec v4** — Solana Agent Hackathon implementation.
 
+**Live frontend:** [ghost-bazaar.vercel.app](https://ghost-bazaar.vercel.app)
+
+**Hackathon frontend update:** MoonPay wallet connect, legal pages for MoonPay onboarding, and an OWS narrative section are now deployed on the standalone Vercel frontend. The landing page can run without the Fly.io engine; dashboard and admin routes still depend on the backend.
+
 **Documentation:**
 
 | Doc | Description |
@@ -158,6 +163,7 @@ frontend/      — Vite + React landing page / dashboard UI
 | [Competitive Landscape](./COMPETITIVE-LANDSCAPE.md) | Comparison with Virtuals ACP, x402, OpenAI/Stripe ACP |
 | [Duty 2 Progress Report](./docs/duty2-progress-report.md) | Engine implementation details, security audit record |
 | [Engine README](./packages/engine/README.md) | Architecture, deployment (Fly.io), usage guide |
+| [Frontend README](./frontend/README.md) | Vercel deployment, MoonPay env vars, standalone frontend notes |
 
 **Duty Breakdown:**
 
@@ -169,10 +175,30 @@ frontend/      — Vite + React landing page / dashboard UI
 
 **Planning:**
 
-- [Design Spec](./docs/superpowers/specs/2026-03-13-ghost-bazaar-solana-agents-design.md)
-- [Implementation Plan](./docs/superpowers/plans/2026-03-14-ghost-bazaar-implementation.md)
+- [Design Spec](./docs/superpowers/specs/2026-03-13-bidlayer-solana-agents-design.md)
+- [Implementation Plan](./docs/superpowers/plans/2026-03-14-bidlayer-implementation.md)
+- [OWS Hackathon Frontend Spec](./docs/superpowers/specs/2026-04-03-ows-hackathon-frontend-design.md)
 - [Market Gap Research](./docs/research/2026-03-market-gap/README.md)
 - [Legacy docs (old specs, early planning)](./docs/legacy/)
+
+## Frontend Deployment
+
+The public frontend is a separate Vercel deployment rooted at `frontend/`:
+
+- Production site: `https://ghost-bazaar.vercel.app`
+- Framework: Vite + React
+- Deploy target: Vercel project `ghost-bazaar`
+
+Frontend environment variables:
+
+- `VITE_MOONPAY_API_KEY` — MoonPay public / publishable key used by wallet connect
+- `VITE_API_URL` — optional backend origin for live dashboard and admin APIs
+
+Behavior by environment:
+
+- Landing page works without `VITE_API_URL`
+- Dashboard and admin routes require the backend
+- If MoonPay auth fails at runtime, the wallet bar falls back to opening `moonpay.com`
 
 ## Roadmap
 
