@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <g transform="translate(100, 105)">
+    <!-- CHEVRON — Line art -->
+    <polyline
+      points="-30,-48 0,-78 30,-48"
+      fill="none"
+      stroke="#111"
+      stroke-width="2.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Bar 1 — Discovery -->
+    <polygon points="0,-16 38,-36 0,-26 -38,-36" fill="#e8e8e8" stroke="#111" stroke-width="0.8"/>
+    <polygon points="-38,-36 0,-26 0,-16 -38,-26" fill="#bbb" stroke="#111" stroke-width="0.8"/>
+    <polygon points="38,-36 0,-26 0,-16 38,-26" fill="#999" stroke="#111" stroke-width="0.8"/>
+
+    <!-- Bar 2 — Negotiation -->
+    <polygon points="0,18 52,-12 0,0 -52,-12" fill="#ddd" stroke="#111" stroke-width="0.8"/>
+    <polygon points="-52,-12 0,0 0,18 -52,6" fill="#aaa" stroke="#111" stroke-width="0.8"/>
+    <polygon points="52,-12 0,0 0,18 52,6" fill="#888" stroke="#111" stroke-width="0.8"/>
+
+    <!-- Bar 3 — Settlement -->
+    <polygon points="0,52 66,14 0,30 -66,14" fill="#d4d4d4" stroke="#111" stroke-width="0.8"/>
+    <polygon points="-66,14 0,30 0,52 -66,36" fill="#999" stroke="#111" stroke-width="0.8"/>
+    <polygon points="66,14 0,30 0,52 66,36" fill="#777" stroke="#111" stroke-width="0.8"/>
+  </g>
+</svg>

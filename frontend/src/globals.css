@@ -1,0 +1,144 @@
+:root {
+  --bg-color: #ffffff;
+  --bg-elevated: #f7f7f5;
+  --bg-panel: rgba(255, 255, 255, 0.86);
+  --bg-overlay: rgba(255, 255, 255, 0.96);
+  --text-color: #111111;
+  --secondary-color: #777777;
+  --hairline: #e5e5e5;
+  --accent: #000000;
+  --selection-bg: #111111;
+  --selection-text: #ffffff;
+  --status-open: #22c55e;
+  --status-warning: #b45309;
+  --status-error: #ef4444;
+  --status-open-rgb: 34, 197, 94;
+  --role-buyer: #111111;
+  --role-seller: #666666;
+  --role-system: #999999;
+  --canvas-lens-rgb: 17, 17, 17;
+  --canvas-ink-rgb: 100, 100, 100;
+  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+  --pad: 24px;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg-color: #0c0f11;
+  --bg-elevated: #14181b;
+  --bg-panel: rgba(20, 24, 27, 0.88);
+  --bg-overlay: rgba(12, 15, 17, 0.96);
+  --text-color: #f3f5f7;
+  --secondary-color: #9ca3af;
+  --hairline: #2a3136;
+  --accent: #f3f5f7;
+  --selection-bg: #f3f5f7;
+  --selection-text: #0c0f11;
+  --status-open: #4ade80;
+  --status-warning: #f59e0b;
+  --status-error: #f87171;
+  --status-open-rgb: 74, 222, 128;
+  --role-buyer: #f3f5f7;
+  --role-seller: #c4cad2;
+  --role-system: #8d96a0;
+  --canvas-lens-rgb: 243, 245, 247;
+  --canvas-ink-rgb: 186, 192, 201;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  cursor: none;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-main);
+  width: 100vw;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-text);
+}
+
+::-moz-selection {
+  background: var(--selection-bg);
+  color: var(--selection-text);
+}
+
+#root {
+  width: 100vw;
+}
+
+/* Hide body scrollbar but keep scroll functional */
+body::-webkit-scrollbar {
+  display: none;
+}
+body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Slim scrollbar for all inner scrollable areas */
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--hairline);
+  border-radius: 2px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline) transparent;
+}
+
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+@keyframes fade-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* --- Mobile: touch devices --- */
+@media (pointer: coarse) {
+  * {
+    cursor: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --pad: 16px;
+  }
+}

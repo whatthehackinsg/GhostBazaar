@@ -1,0 +1,38 @@
+name: Deploy Engine to Fly.io
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/engine/**"
+      - "packages/core/**"
+      - "packages/zk/**"
+      - "packages/agents/**"
+      - "Dockerfile"
+      - "fly.toml"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: fly-deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy engine
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

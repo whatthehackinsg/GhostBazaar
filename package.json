@@ -1,0 +1,19 @@
+{
+  "name": "ghost-bazaar",
+  "private": true,
+  "scripts": {
+    "test": "pnpm -r test",
+    "build": "pnpm -r build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ]
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

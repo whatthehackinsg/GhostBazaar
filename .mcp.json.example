@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "ghost-bazaar": {
+      "command": "node",
+      "args": ["packages/mcp/dist/cli.js"],
+      "env": {
+        "SOLANA_KEYPAIR_PATH": ".keys/<your-role>.json",
+        "NEGOTIATION_ENGINE_URL": "https://ghost-bazaar-engine.fly.dev",
+        "SOLANA_RPC_URL": "https://api.devnet.solana.com",
+        "USDC_MINT": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+        "PINATA_JWT": "<your-pinata-jwt-optional>"
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+# Dependencies (re-installed in container)
+node_modules/
+
+# Build output (rebuilt in container)
+dist/
+
+# Version control
+.git/
+.gitignore
+
+# Local tool artifacts
+.agents/
+.beads/
+.claude/
+.ccb/
+.cocoindex_code/
+.gitnexus
+node-compile-cache/
+skills-lock.json
+
+# Plans and docs (not needed at runtime)
+plans/
+docs/
+demo/
+*.md
+!packages/*/README.md
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.ptau
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.log
+
+# Tests (not needed at runtime)
+packages/*/tests/
+packages/*/vitest.config.ts

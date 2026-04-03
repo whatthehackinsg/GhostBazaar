@@ -1,0 +1,32 @@
+{
+  "name": "@ghost-bazaar/engine",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx src/server.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ghost-bazaar/agents": "workspace:*",
+    "@ghost-bazaar/core": "workspace:*",
+    "@ghost-bazaar/settlement": "workspace:*",
+    "@ghost-bazaar/zk": "workspace:*",
+    "@hono/node-server": "^1.11.0",
+    "@solana/web3.js": "^1.95.0",
+    "better-sqlite3": "^12.8.0",
+    "bs58": "^6.0.0",
+    "hono": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.5.0",
+    "fast-check": "^4.6.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "@ghost-bazaar/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "ghost-bazaar-mcp": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@ghost-bazaar/core": "workspace:*",
+    "@ghost-bazaar/strategy": "workspace:*",
+    "@ghost-bazaar/agents": "workspace:*",
+    "@ghost-bazaar/settlement": "workspace:*",
+    "@ghost-bazaar/zk": "workspace:*",
+    "@noble/hashes": "^1.4.0",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@solana/web3.js": "^1.95.0",
+    "@solana/spl-token": "^0.4.6",
+    "bs58": "^6.0.0",
+    "decimal.js": "^10.4.3",
+    "uuid": "^9.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@ghost-bazaar/engine": "workspace:*",
+    "@types/node": "^25.5.0",
+    "@types/uuid": "^9.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}

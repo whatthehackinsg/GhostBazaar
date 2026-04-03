@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build
+dist/
+build/
+!packages/zk/build/BudgetRangeProof_final.zkey
+!packages/zk/build/BudgetRangeProof_js/BudgetRangeProof.wasm
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Keys & credentials
+*.pem
+*.key
+*.p12
+*.ptau
+.mcp.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Caches
+node-compile-cache/
+
+# Runtime data
+data/
+
+# Coding assistant data
+.claude/*
+!.claude/skills/
+.codex/*
+!.codex/config.example.toml
+.sisyphus/
+
+.beads/
+.cocoindex_code/
+.gitnexus
+.ccb/
+AGENTS.md
+CLAUDE.md
+skills-lock.json
+tsx-*
+.keys/

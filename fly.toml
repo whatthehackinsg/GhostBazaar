@@ -1,0 +1,58 @@
+# ---------------------------------------------------------------------------
+# Ghost Bazaar Engine — Fly.io deployment config
+#
+# Deploy:  fly deploy
+# Logs:    fly logs
+# Status:  fly status
+# SSH:     fly ssh console
+# ---------------------------------------------------------------------------
+
+app = "ghost-bazaar-engine"
+primary_region = "iad"
+
+[build]
+
+[env]
+  PORT = "3000"
+  NODE_ENV = "production"
+  DATA_DIR = "/data"
+  # Enforcer scans less frequently in prod (saves CPU on shared VMs)
+  ENFORCER_INTERVAL_MS = "5000"
+  COSIGN_TIMEOUT_MS = "60000"
+  # CORS — comma-separated allowed origins for frontend
+  ALLOWED_ORIGINS = "https://ghost-bazaar-protocol.vercel.app"
+  # Set to "false" to disable seed demo listings
+  # SEED_LISTINGS = "false"
+
+# Persistent volume for SQLite database
+# Create with: fly volumes create ghost_bazaar_data --size 1 --region iad
+[mounts]
+  source = "ghost_bazaar_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  # 1 = always-on (no cold start); free tier covers 3 shared machines
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "connections"
+    # SSE connections are long-lived; size limits for shared CPU
+    hard_limit = 200
+    soft_limit = 150
+
+  # Health check — Fly pings this to know the machine is alive
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1

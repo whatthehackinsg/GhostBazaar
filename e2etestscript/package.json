@@ -1,0 +1,17 @@
+{
+  "name": "e2e-test-script",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e": "node --import tsx/esm run.ts"
+  },
+  "dependencies": {
+    "@ghost-bazaar/core": "workspace:*",
+    "@ghost-bazaar/agents": "workspace:*",
+    "@ghost-bazaar/engine": "workspace:*",
+    "@ghost-bazaar/settlement": "workspace:*",
+    "@solana/web3.js": "^1.95.0",
+    "@solana/spl-token": "^0.4.6",
+    "tsx": "^4.21.0"
+  }
+}
