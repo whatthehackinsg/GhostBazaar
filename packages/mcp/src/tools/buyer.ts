@@ -11,13 +11,13 @@ import { createRequire } from "module"
 import { z } from "zod"
 import Decimal from "decimal.js"
 import { v4 as uuidv4 } from "uuid"
+import type { Keypair } from "@solana/web3.js"
 import {
   buildDid,
   type Listing,
   objectSigningPayload,
   signEd25519,
   signQuoteAsBuyer,
-  didToPublicKey,
   type RFQ,
 } from "@ghost-bazaar/core"
 import { sanitizeBuyerAction, type BuyerPrivate } from "@ghost-bazaar/strategy"
@@ -417,8 +417,24 @@ export function defineBuyerTools(config: McpConfig, state: BuyerState) {
       handler: async (input: { rfq_id: string; tx_sig: string; quote: Record<string, unknown> }) => {
         const quote = input.quote as any
         const startMs = Date.now()
+      description: "Verify settlement — takes the Solana transaction signature from a MoonPay token_transfer and POSTs the seller's /execute endpoint for verification. Call MoonPay's token_transfer tool FIRST to send USDC, then pass the tx signature here.",
+      inputSchema: z.object({
+        quote: z.record(z.unknown()).describe("The fully signed quote object"),
+        payment_signature: z.string().describe("Solana transaction signature from MoonPay token_transfer"),
+      }),
+      handler: async (input: { quote: Record<string, unknown>; payment_signature: string }) => {
+        const quote = input.quote as any
+        const txSig = input.payment_signature
+
+        if (!txSig || txSig.length < 80) {
+          throw new Error(
+            "Invalid payment_signature. Use MoonPay's token_transfer tool first to send USDC, " +
+            "then pass the returned transaction signature here.",
+          )
+        }
 
         // POST seller's /execute endpoint with required headers
+        const startMs = Date.now()
         const quoteB64 = Buffer.from(JSON.stringify(quote)).toString("base64")
         const executeUrl = quote.payment_endpoint ?? `${config.engineUrl}/execute`
 

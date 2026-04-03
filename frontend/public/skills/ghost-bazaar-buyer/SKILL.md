@@ -13,9 +13,12 @@ You are a buyer agent in the Ghost Bazaar protocol — a decentralized price neg
 Before you can act as a buyer, make sure:
 
 1. **The project is built**: run `pnpm install && pnpm build` from the repo root.
-2. **You have a Solana keypair**: place your JSON keypair file in `.keys/` (e.g. `.keys/buyer.json`). If you don't have one, generate with `solana-keygen new --outfile .keys/buyer.json`. You can also provide an existing base58-encoded key via the `SOLANA_KEYPAIR` env var instead.
-3. **Your wallet is funded**: you need devnet SOL for transaction fees. Airdrop from https://faucet.solana.com using your public key.
-4. **You have USDC tokens**: you need test USDC in your token account to pay sellers. Ask the project maintainer for the mint authority to receive test tokens, or use the configured USDC mint to create your own token account.
+2. **You have a Solana keypair**: place your JSON keypair file in `.keys/` (e.g. `.keys/buyer.json`). If you don't have one, generate with `solana-keygen new --outfile .keys/buyer.json`. You can also provide an existing base58-encoded key via the `SOLANA_KEYPAIR` env var instead. This keypair is used for Ed25519 quote/RFQ signing (not for payment).
+3. **MoonPay MCP server is configured**: settlement uses MoonPay's agent wallet for USDC transfers. Add the `moonpay` MCP server to your `.mcp.json` (see MCP Setup below).
+   - Install MoonPay CLI: `npm install -g @moonpay/cli`
+   - Authenticate: `mp login --email <your-email>` then `mp verify --email <your-email> --code <code>`
+   - Create wallet: `mp wallet create --name main`
+   - Fund wallet with USDC on Solana: `mp buy --wallet main --chain solana --token <USDC_MINT> --amount <desired>`
 
 ## MCP Setup
 
@@ -38,6 +41,10 @@ Copy `.mcp.json.example` to `.mcp.json` at the repo root and fill in your values
         "USDC_MINT": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
         "PINATA_JWT": "<your-pinata-jwt-if-you-have-one>"
       }
+    },
+    "moonpay": {
+      "command": "mp",
+      "args": ["mcp"]
     }
   }
 }
@@ -87,6 +94,7 @@ PINATA_JWT = "<your-pinata-jwt-if-you-have-one>"
 | `ghost_bazaar_accept` | Accept an offer — both sides sign — deal committed |
 | `ghost_bazaar_settle` | Prepare settlement — returns MoonPay transfer parameters |
 | `ghost_bazaar_confirm_settlement` | Confirm settlement after MoonPay transfer — verifies with seller |
+| `ghost_bazaar_settle` | Verify settlement with the seller — pass the tx signature from MoonPay's `token_transfer` |
 | `ghost_bazaar_buyer_feedback` | Submit post-settlement reputation feedback for the seller |
 
 ## MoonPay Integration
@@ -161,11 +169,25 @@ This returns the **full signed quote object**. Save it — you need it for settl
 ### 6. Settle via MoonPay
 
 After the seller cosigns, settlement is a 3-step process:
+### 6. Settle (two steps)
+
+After the seller cosigns, settlement is a two-step process:
+
+**Step 6a — Send USDC via MoonPay:**
+
+Use MoonPay's `token_transfer` tool to send USDC to the seller's Solana address. The seller address is the `seller` field in the quote (a `did:key:` — derive the base58 address from it, or use the address from the quote's payment details).
+
+Save the **transaction signature** returned by MoonPay.
+
+**Step 6b — Verify with seller:**
 
 **Step 1 — Prepare settlement:**
 ```
 Tool: ghost_bazaar_settle
-Input: { "quote": { ...the full quote object returned by accept... } }
+Input: {
+  "quote": { ...the full quote object returned by accept... },
+  "payment_signature": "<tx-signature-from-moonpay>"
+}
 ```
 
 This returns MoonPay `token_transfer` parameters (wallet, chain, token, amount, recipient).
@@ -185,6 +207,7 @@ Input: { "rfq_id": "<rfq_id>", "tx_sig": "<tx-sig-from-moonpay>", "quote": { ...
 ```
 
 This verifies the payment with the seller's settlement endpoint and returns a receipt with an on-chain explorer link.
+This POSTs the transaction proof to the seller's settlement verification endpoint. A receipt with an on-chain explorer link is returned.
 
 ## Privacy Rules
 
